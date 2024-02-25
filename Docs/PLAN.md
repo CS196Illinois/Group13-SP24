@@ -1,5 +1,3 @@
-Plan file. Can also be a PDF or something else. Just make sure to name PLAN with all caps
-
 Week 1: Idea generation
 
 Week 2: Tech setup + project selection
@@ -7,7 +5,7 @@ Week 2: Tech setup + project selection
 Week 3: Developmenr environment setup + learning phase
 
 Week 4: Getting the character to move all four directions.
-        Adding onstacles that the player cannot walk through
+        Adding obstacles that the player cannot walk through (Collision)
 
 Week 5: Shooting mechanics. Ammo count and ammo pickups on the ground.
 
