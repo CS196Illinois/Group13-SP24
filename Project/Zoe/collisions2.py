@@ -56,11 +56,13 @@ class Player(pygame.sprite.Sprite):
                     self.pos.x = self.rect.x
                     self.direction.x *= -1
 
+
                 #player moving left and colliding w sprite's right side
                 if self.rect.left <= sprite.rect.right and self.old_rect.left >= sprite.rect.right:
                     self.rect.left = sprite.rect.right
                     self.pos.x = self.rect.x
                     self.direction.x *= -1
+
 
             if direction == 'vertical':
                 #player moving down and colliding w sprite's top
@@ -74,6 +76,7 @@ class Player(pygame.sprite.Sprite):
                     self.rect.top = sprite.rect.bottom
                     self.pos.y = self.rect.y
                     self.direction.y *= -1
+
 
     def bordercollision(self,direction):
         #left or right
@@ -116,30 +119,37 @@ class Ball(pygame.sprite.Sprite):
         super().__init__(groups)
         self.image = pygame.Surface((20,20))
         self.image.fill('red')
-        self.rect = self.image.get_rect(center = (10,10))
+        self.rect = self.image.get_rect(topleft = (10,10))
 
         self.pos = pygame.math.Vector2(self.rect.topleft)
         self.direction = pygame.math.Vector2(1,1)
-        self.speed = 100
+        self.speed = 200
         self.old_rect = self.rect.copy()
         self.obstacles = obstacles
 
     def collisions(self,direction):
         self.obstacles = pygame.sprite.spritecollide(self,collision_sprites,False)
 
+        if pygame.sprite.collide_rect(player,self):
+            self.obstacles.append(player)
+
         for sprite in self.obstacles:
             if direction == 'horizontal':
                 #ball moving right, colliding w sprite's left
                 if self.rect.right >= sprite.rect.left and self.old_rect.right <= sprite.rect.left:
+                    print('horizontal,left',self.pos.x,self.rect.x)
                     self.rect.right = sprite.rect.left
                     self.pos.x = self.rect.x
+                    print('horizontal,left',self.pos.x,self.rect.x)
                     self.direction.x *= -1
+                    self.pos.x -= 1
 
                 #ball moving left, colliding w sprite's right
                 if self.rect.left <= sprite.rect.right and self.old_rect.left >= sprite.rect.right:
                     self.rect.left = sprite.rect.right
                     self.pos.x = self.rect.x
                     self.direction.x *= -1
+                    self.pos.x += 1
 
             if direction == 'vertical':
                 #ball moving down, colliding w sprite top
@@ -147,12 +157,14 @@ class Ball(pygame.sprite.Sprite):
                     self.rect.bottom = sprite.rect.top
                     self.pos.y = self.rect.y
                     self.direction.y *= -1
+                    self.pos.y -= 1
 
                 #ball moving up, colliding w sprite top
                 if self.rect.top <= sprite.rect.bottom and self.old_rect.top >= sprite.rect.bottom:
                     self.rect.top = sprite.rect.bottom
                     self.pos.y = self.rect.y
                     self.direction.y *= -1
+                    self.pos.y += 1
 
     def bordercollision(self,direction):
         #colliding w left or right side of window
@@ -188,6 +200,7 @@ class Ball(pygame.sprite.Sprite):
 
 
     def update(self,dt):
+        self.old_rect = self.rect.copy()
         self.pos.x += self.direction.x * self.speed * dt
         self.rect.x = round(self.pos.x)
         self.collisions('horizontal')
