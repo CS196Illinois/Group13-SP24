@@ -6,6 +6,7 @@ class Tree(pygame.sprite.Sprite):
 		super().__init__(group)
 		self.image = pygame.image.load('graphics/tree.png').convert_alpha()
 		self.rect = self.image.get_rect(topleft = pos)
+		
 
 class Player(pygame.sprite.Sprite):
 	def __init__(self,pos,group):
@@ -14,6 +15,7 @@ class Player(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect(center = pos)
 		self.direction = pygame.math.Vector2()
 		self.speed = 5
+		
 
 	def input(self):
 		keys = pygame.key.get_pressed()
