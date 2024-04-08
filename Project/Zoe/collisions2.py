@@ -114,6 +114,8 @@ class Player(pygame.sprite.Sprite):
         self.collisions('vertical')
         self.bordercollision('vertical')
 
+#make power up class extending ball class
+
 class Ball(pygame.sprite.Sprite):
     def __init__(self,groups,obstacles):
         super().__init__(groups)
@@ -137,10 +139,9 @@ class Ball(pygame.sprite.Sprite):
             if direction == 'horizontal':
                 #ball moving right, colliding w sprite's left
                 if self.rect.right >= sprite.rect.left and self.old_rect.right <= sprite.rect.left:
-                    print('horizontal,left',self.pos.x,self.rect.x)
+
                     self.rect.right = sprite.rect.left
                     self.pos.x = self.rect.x
-                    print('horizontal,left',self.pos.x,self.rect.x)
                     self.direction.x *= -1
                     self.pos.x -= 1
 
@@ -222,9 +223,10 @@ all_sprites = pygame.sprite.Group()
 collision_sprites = pygame.sprite.Group()
 
 #sprite setup
-StaticObstacle((100,300),(100,50),[all_sprites,collision_sprites],'yellow')
-StaticObstacle((400,100),(100,100),[all_sprites,collision_sprites],'blue')
-StaticObstacle((250,200),(100,100),[all_sprites,collision_sprites],'green')
+StaticObstacle((0,0),(150,20),[all_sprites,collision_sprites],'yellow')
+StaticObstacle((150,0),(20,300),[all_sprites,collision_sprites],'blue')
+StaticObstacle((150,300),(100,20),[all_sprites,collision_sprites],'green')
+StaticObstacle((250,120),(20,200),[all_sprites,collision_sprites],'yellow')
 player = Player(all_sprites,collision_sprites)
 ball = Ball(all_sprites,collision_sprites)
 
