@@ -7,8 +7,9 @@ pygame.init()
 display = pygame.display.set_mode((800, 600))
 clock = pygame.time.Clock()
 
-class Player:
+class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height):
+        pygame.sprite.Sprite.__init__(self)
         self.x = x
         self.y = y
         self.width = width
@@ -16,9 +17,14 @@ class Player:
         self.direction = pygame.math.Vector2()
         self.speed = 7
 
-    def main(self, display):
+        self.image = pygame.Surface([10,10])
+        self.image.fill('red')
+        self.rect = self.image.get_rect(topleft = (200,200))
+        self.old_rect = self.rect.copy()
+
+    def main(self):
         #Drawing Character
-        pygame.draw.rect(display, (255, 0, 0), (self.x, self.y, self.width, self.height))
+        display.blit(self.image, self.rect)
 
         #Movement
         self.input()
@@ -42,6 +48,60 @@ class Player:
             self.direction.x = -1
         else:
             self.direction.x = 0
+
+    def collisions(self, direction):
+        #checking collisions with bullets, change
+        self.obstacles = pygame.sprite.spritecollide(self,player_bullets,False)
+        for sprite in self.obstacles:
+            if direction == 'horizontal':
+                #player moving right and colliding w sprite's left side
+                if self.rect.right >= sprite.rect.left and self.old_rect.right >= sprite.rect.left:
+                    self.rect.right = sprite.rect.left
+                    self.pos.x = self.rect.x
+                    self.direction.x *= -1
+
+
+                #player moving left and colliding w sprite's right side
+                if self.rect.left <= sprite.rect.right and self.old_rect.left >= sprite.rect.right:
+                    self.rect.left = sprite.rect.right
+                    self.pos.x = self.rect.x
+                    self.direction.x *= -1
+
+
+            if direction == 'vertical':
+                #player moving down and colliding w sprite's top
+                if self.rect.bottom >= sprite.rect.top and self.old_rect.bottom <= sprite.rect.top:
+                    self.rect.bottom = sprite.rect.top
+                    self.pos.y = self.rect.y
+                    self.direction.y *= -1
+
+                #player moving up and colliding w sprite's bottom
+                if self.rect.top <= sprite.rect.bottom and self.old_rect.top >= sprite.rect.bottom:
+                    self.rect.top = sprite.rect.bottom
+                    self.pos.y = self.rect.y
+                    self.direction.y *= -1
+
+
+    def bordercollision(self,direction):
+        #left or right
+        if direction == 'horizontal':
+            if self.rect.left <= 0:
+                self.rect.left = 0
+                self.direction.x *= -1
+
+            if self.rect.right >= 600:
+                self.rect.right = 600
+                self.direction.x *= -1
+
+        if direction == 'vertical':
+            if self.rect.top <= 0:
+                self.rect.top = 0
+                self.direction.y *= -1
+
+            if self.rect.bottom >= 400:
+                self.rect.bottom = 400
+                self.direction.y *= -1
+    
 		
 class PlayerBullet:
     def __init__(self, x, y, mouse_x, mouse_y):
@@ -69,6 +129,7 @@ player_bullets = []
 
 while True:
     display.fill((54,54,86))
+    
 
     mouse_x, mouse_y = pygame.mouse.get_pos()
 
@@ -80,8 +141,12 @@ while True:
                 new_bullet = PlayerBullet(player.x, player.y, mouse_x, mouse_y)
                 player_bullets.append(new_bullet)
 
-    player.main(display)
-    
+    player.main()
+    player.collisions('horizontal')
+    player.collisions('vertical')
+    player.bordercollision('horizontal')
+    player.bordercollision('vertical')
+
     for bullet in player_bullets:
         bullet.main(display)
 
