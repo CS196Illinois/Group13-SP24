@@ -1,9 +1,54 @@
 import pygame
+from pygame.locals import*
+import math
+from random import randrange
+import sys
+
 pygame.init()
 
-goblin.draw(window)
+# goblin.draw(window)
 
-goblin = enemy(100, 410,  64, 64, 450)
+# goblin = enemy(100, 410,  64, 64, 450)
+
+display = pygame.display.set_mode((800, 600))
+pygame.display.set_caption('Enemies')
+
+clock = pygame.time.Clock()
+fps = 60
+
+vec = pygame.math.Vector2
+
+class Player(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        self.pos = vec(x, y)
+        self.vel = vec(0, 0)
+        # self.acc = vec(0, 0)
+        # self.ACC = 1
+        # self.FRIC = -0.1
+
+        self.image = pygame.image.load('./img/blobLeft.png')
+
+
+    def render(self, surface):
+        surface.blit(self.image, self.pos)
+
+    def move(self):
+        keys = pygame.key.get_pressed()
+
+        if keys[K_LEFT]:
+            if self.pos.x > 0:
+                self.pos.x -= 4
+        if keys[K_RIGHT]:
+            if self.pos.x < 800 - self.image.get_width():
+                self.pos.x += 4
+        if keys[K_DOWN]:
+            if self.pos.y < 600 - self.image.get_height():
+                self.pos.y += 3
+        if keys[K_UP]:
+            if self.pos.y > 0:
+                self.pos.y -= 3
+
+player = Player(400, 300)
 
 
 class enemy(object):
@@ -40,11 +85,30 @@ class enemy(object):
           else:
              self.vel = self.vel * -1
              self.walkCount = 0
-        else:
           if self.x - self.vel > self.path[0]:
              self.x += self.vel
           else:
              self.vel = self.vel * -1
-             self.walkCount = 0:
+             self.walkCount = 0
+
+while True:
+
+   
+
+   for event in pygame.event.get():
+      if event.type == pygame.QUIT:
+         sys.exit()
+         pygame.QUIT
+
+   player.move()
+
+   display.fill((255, 255, 255))
+   player.render(display)
+   clock.tick(fps)
+
+   pygame.display.flip()
+   
+
+
 
 

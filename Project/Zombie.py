@@ -12,7 +12,7 @@ zombiey = randrange(600)
 zombiespeed = 4
 
 def add_zombie_at_location(x, y):
-    game_display.blit(zombie)
+    game_display.blit(zombie, (x, y))
 
 
 while True:
