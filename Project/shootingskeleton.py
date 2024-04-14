@@ -1,7 +1,6 @@
 import pygame
 import sys
 import math
-import time
 
 pygame.init()
 
@@ -21,10 +20,9 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.Surface([10,10])
         self.image.fill('red')
         self.rect = self.image.get_rect(topleft = (200,200))
-
-    def main(self):
         self.old_rect = self.rect.copy()
 
+    def main(self):
         #Drawing Character
         display.blit(self.image, self.rect)
 

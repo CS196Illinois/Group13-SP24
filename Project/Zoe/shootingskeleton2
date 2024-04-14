@@ -11,29 +11,34 @@ clock = pygame.time.Clock()
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height):
         pygame.sprite.Sprite.__init__(self)
-        self.x = x
-        self.y = y
         self.width = width
         self.height = height
         self.direction = pygame.math.Vector2()
         self.speed = 7
 
-        self.image = pygame.Surface([10,10])
+        self.image = pygame.Surface([width, height])
         self.image.fill('red')
-        self.rect = self.image.get_rect(topleft = (200,200))
-
-    def main(self):
+        self.rect = self.image.get_rect(topleft=(x, y))
         self.old_rect = self.rect.copy()
 
-        #Drawing Character
-        display.blit(self.image, self.rect)
 
-        #Movement
+    def update(self,dt):
+        self.old_rect = self.rect.copy()
         self.input()
-        self.x += self.direction.x * self.speed
-        self.y += self.direction.y * self.speed
-		
-    #Determining direction for movement
+
+        if self.direction.magnitude() != 0:
+            self.direction = self.direction.normalize()
+
+        self.pos.x += self.direction.x * self.speed * dt
+        self.rect.x = round(self.pos.x)
+        self.collisions('horizontal')
+        self.bordercollision('horizontal')
+        self.pos.y += self.direction.y * self.speed * dt
+        self.rect.y = round(self.pos.y)
+        self.collisions('vertical')
+        self.bordercollision('vertical')
+
+    # Determining direction for movement
     def input(self):
         keys = pygame.key.get_pressed()
 
@@ -103,8 +108,7 @@ class Player(pygame.sprite.Sprite):
             if self.rect.bottom >= 400:
                 self.rect.bottom = 400
                 self.direction.y *= -1
-    
-		
+
 class PlayerBullet:
     def __init__(self, x, y, mouse_x, mouse_y):
         self.x = x
@@ -112,10 +116,10 @@ class PlayerBullet:
         self.mouse_x = mouse_x
         self.mouse_y = mouse_y
         self.speed = 15
-        self.angle = math.atan2(y-mouse_y, x-mouse_x)
+        self.angle = math.atan2(y - mouse_y, x - mouse_x)
         self.x_vel = math.cos(self.angle) * self.speed
         self.y_vel = math.sin(self.angle) * self.speed
-    
+
     def main(self, display):
         self.x -= int(self.x_vel)
         self.y -= int(self.y_vel)
@@ -126,12 +130,11 @@ class PlayerBullet:
 player = Player(400, 400, 32, 32)
 player_bullets = []
 
-
-
-
+last_time = time.time()
 while True:
-    display.fill((54,54,86))
-    
+    dt = time.time() - last_time
+    last_time = time.time()
+    display.fill((54, 54, 86))
 
     mouse_x, mouse_y = pygame.mouse.get_pos()
 
@@ -140,23 +143,12 @@ while True:
             sys.exit()
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
-                new_bullet = PlayerBullet(player.x, player.y, mouse_x, mouse_y)
+                new_bullet = PlayerBullet(player.rect.centerx, player.rect.centery, mouse_x, mouse_y)
                 player_bullets.append(new_bullet)
 
-    player.main()
-    player.collisions('horizontal')
-    player.collisions('vertical')
-    player.bordercollision('horizontal')
-    player.bordercollision('vertical')
+    player.update(dt)
 
     for bullet in player_bullets:
         bullet.main(display)
 
-
-
-
-    
-    
-
-    clock.tick(60)
     pygame.display.update()

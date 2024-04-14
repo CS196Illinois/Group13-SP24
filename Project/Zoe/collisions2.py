@@ -1,6 +1,5 @@
 import pygame, sys, time
 
-#for ball: bottom of sprite and left of sprite collisions arent working its teleporting
 
 #defining classes
 class StaticObstacle(pygame.sprite.Sprite):
@@ -56,11 +55,13 @@ class Player(pygame.sprite.Sprite):
                     self.pos.x = self.rect.x
                     self.direction.x *= -1
 
+
                 #player moving left and colliding w sprite's right side
                 if self.rect.left <= sprite.rect.right and self.old_rect.left >= sprite.rect.right:
                     self.rect.left = sprite.rect.right
                     self.pos.x = self.rect.x
                     self.direction.x *= -1
+
 
             if direction == 'vertical':
                 #player moving down and colliding w sprite's top
@@ -74,6 +75,7 @@ class Player(pygame.sprite.Sprite):
                     self.rect.top = sprite.rect.bottom
                     self.pos.y = self.rect.y
                     self.direction.y *= -1
+
 
     def bordercollision(self,direction):
         #left or right
@@ -111,35 +113,43 @@ class Player(pygame.sprite.Sprite):
         self.collisions('vertical')
         self.bordercollision('vertical')
 
+#make power up class extending ball class
+
 class Ball(pygame.sprite.Sprite):
     def __init__(self,groups,obstacles):
         super().__init__(groups)
         self.image = pygame.Surface((20,20))
         self.image.fill('red')
-        self.rect = self.image.get_rect(center = (10,10))
+        self.rect = self.image.get_rect(topleft = (10,10))
 
         self.pos = pygame.math.Vector2(self.rect.topleft)
         self.direction = pygame.math.Vector2(1,1)
-        self.speed = 100
+        self.speed = 200
         self.old_rect = self.rect.copy()
         self.obstacles = obstacles
 
     def collisions(self,direction):
         self.obstacles = pygame.sprite.spritecollide(self,collision_sprites,False)
 
+        if pygame.sprite.collide_rect(player,self):
+            self.obstacles.append(player)
+
         for sprite in self.obstacles:
             if direction == 'horizontal':
                 #ball moving right, colliding w sprite's left
                 if self.rect.right >= sprite.rect.left and self.old_rect.right <= sprite.rect.left:
+
                     self.rect.right = sprite.rect.left
                     self.pos.x = self.rect.x
                     self.direction.x *= -1
+                    self.pos.x -= 1
 
                 #ball moving left, colliding w sprite's right
                 if self.rect.left <= sprite.rect.right and self.old_rect.left >= sprite.rect.right:
                     self.rect.left = sprite.rect.right
                     self.pos.x = self.rect.x
                     self.direction.x *= -1
+                    self.pos.x += 1
 
             if direction == 'vertical':
                 #ball moving down, colliding w sprite top
@@ -147,12 +157,14 @@ class Ball(pygame.sprite.Sprite):
                     self.rect.bottom = sprite.rect.top
                     self.pos.y = self.rect.y
                     self.direction.y *= -1
+                    self.pos.y -= 1
 
                 #ball moving up, colliding w sprite top
                 if self.rect.top <= sprite.rect.bottom and self.old_rect.top >= sprite.rect.bottom:
                     self.rect.top = sprite.rect.bottom
                     self.pos.y = self.rect.y
                     self.direction.y *= -1
+                    self.pos.y += 1
 
     def bordercollision(self,direction):
         #colliding w left or right side of window
@@ -188,6 +200,7 @@ class Ball(pygame.sprite.Sprite):
 
 
     def update(self,dt):
+        self.old_rect = self.rect.copy()
         self.pos.x += self.direction.x * self.speed * dt
         self.rect.x = round(self.pos.x)
         self.collisions('horizontal')
@@ -209,9 +222,10 @@ all_sprites = pygame.sprite.Group()
 collision_sprites = pygame.sprite.Group()
 
 #sprite setup
-StaticObstacle((100,300),(100,50),[all_sprites,collision_sprites],'yellow')
-StaticObstacle((400,100),(100,100),[all_sprites,collision_sprites],'blue')
-StaticObstacle((250,200),(100,100),[all_sprites,collision_sprites],'green')
+StaticObstacle((0,0),(150,20),[all_sprites,collision_sprites],'yellow')
+StaticObstacle((150,0),(20,300),[all_sprites,collision_sprites],'blue')
+StaticObstacle((150,300),(100,20),[all_sprites,collision_sprites],'green')
+StaticObstacle((250,120),(20,200),[all_sprites,collision_sprites],'yellow')
 player = Player(all_sprites,collision_sprites)
 ball = Ball(all_sprites,collision_sprites)
 
