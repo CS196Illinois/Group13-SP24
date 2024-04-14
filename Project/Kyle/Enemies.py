@@ -1,17 +1,16 @@
 import pygame
 from pygame.locals import*
 import math
+import random
 from random import randrange
 import sys
 
 pygame.init()
 
-# goblin.draw(window)
-
-# goblin = enemy(100, 410,  64, 64, 450)
 
 display = pygame.display.set_mode((800, 600))
 pygame.display.set_caption('Enemies')
+BLACK = (255, 255, 255)
 
 clock = pygame.time.Clock()
 fps = 60
@@ -22,11 +21,10 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, x, y):
         self.pos = vec(x, y)
         self.vel = vec(0, 0)
-        # self.acc = vec(0, 0)
-        # self.ACC = 1
-        # self.FRIC = -0.1
-
         self.image = pygame.image.load('./img/blobLeft.png')
+        self.base_player_image = self.image
+        self.hitbox_rect = self.base_player_image.get_rect(center = self.pos)
+        self.rect = self.hitbox_rect.copy()
 
 
     def render(self, surface):
@@ -48,52 +46,72 @@ class Player(pygame.sprite.Sprite):
             if self.pos.y > 0:
                 self.pos.y -= 3
 
+        self.hitbox_rect.center = self.pos
+
 player = Player(400, 300)
 
 
-class enemy(object):
-   #  walkRight = [pygame.image.loadoad('x.png'), pygame.image.loadoad('x2.png'), pygame.image.loadoad('x3.png'), pygame.image.loadoad('x4.png')]
-   #  walkLeft = [pygame.image.loadoad('y.png'), pygame.image.loadoad('y2.png'), pygame.image.loadoad('y3.png'), pygame.image.loadoad('y4.png')]
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self, position):
+         self.image = pygame.image.load('./img/blueOrb.png').convert_alpha()
+         # self.image = pygame.transform.rotozoom(self.image, 0, 2)
+         self.rect = self.image.get_rect()
+         self.rect.center = position
+         self.direction = pygame.math.Vector2()
+         self.vel = pygame.math.Vector2()
+         self.speed = (random.random() * 2) + 1
+        
+         self.position = pygame.math.Vector2(position)
+
+    def render(self, surface):
+        surface.blit(self.image, self.position)
+
+    def chase(self):
+       player_vector = pygame.math.Vector2(player.hitbox_rect.center)
+       enemy_vector = pygame.math.Vector2(self.rect.center)
+
+       distance = self.get_distance(player_vector, enemy_vector)
+       if distance > 0:
+           self.direction = (player_vector - enemy_vector).normalize()
+       else: 
+           self.direction = pygame.math.Vector2()
+
+       self.vel = self.direction * self.speed
+       self.position += self.vel
+
+       self.rect.centerx = self.position.x
+       self.rect.centery = self.position.y
+
+    def get_distance(self, vector1, vector2):
+        return (vector1 - vector2).magnitude()
     
-    def __init__(self, x, y, width, height, end):
-       self.x = x
-       self.y = y
-       self.width = width
-       self.height = height
-       self.end = end
-       self.path = [self.x, self.end]
-       self.walkCount = 0
-       self.vel = 3
+    def update(self):
+        self.chase()
 
-    def draw(self, win):
-       self.move()
-       if self.walkCount + 1 >= 33:
-          self.walkCount = 0
-
-       if  self.vel > 0:
-          win.blit(self.walkRight[self.walkCount //3], (self.x, self.y))
-          self.walkCount += 1
-       else:
-          win.blit(self.walkLeft[self.walkCount //3], (self.x, self.y))
-          self.walkCount += 1
+   
 
 
-    def move(self):
-       if self.vel > 0:
-          if self.x + self.vel < self.path[1]:
-             self.x += self.vel
-          else:
-             self.vel = self.vel * -1
-             self.walkCount = 0
-          if self.x - self.vel > self.path[0]:
-             self.x += self.vel
-          else:
-             self.vel = self.vel * -1
-             self.walkCount = 0
+enemies = []
+
+s_width, s_height = display.get_size()
+
+enemy_spawnpoints = [(50, 50), (s_width - 50, 50), (50, s_height - 50), (s_width - 50, s_height - 50)]
+
+# print(enemy_spawnpoints)
+
+enemy_clock = 0
+enemy_wait_time = random.randint(1, 7)
 
 while True:
 
-   
+   enemy_clock += 1
+
+   if enemy_clock >= enemy_wait_time * 60:
+       enemy_clock = 0
+       enemy_wait_time = random.randint(1, 7)
+       start_pos = random.randint(0, 3)
+       enemy = Enemy(enemy_spawnpoints[start_pos])
+       enemies.append(enemy)
 
    for event in pygame.event.get():
       if event.type == pygame.QUIT:
@@ -102,7 +120,13 @@ while True:
 
    player.move()
 
-   display.fill((255, 255, 255))
+
+   display.fill(BLACK)
+
+   for i in range(0,len(enemies)):
+      enemies[i].update()
+      enemies[i].render(display)
+
    player.render(display)
    clock.tick(fps)
 
