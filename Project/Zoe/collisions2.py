@@ -1,6 +1,5 @@
 import pygame, sys, time
 
-#for ball: bottom of sprite and left of sprite collisions arent working its teleporting
 
 #defining classes
 class StaticObstacle(pygame.sprite.Sprite):
