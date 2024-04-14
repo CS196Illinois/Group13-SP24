@@ -154,7 +154,7 @@ class CameraGroup(pygame.sprite.Group):
 		
 		self.center_target_camera(player)
 		#self.box_target_camera(player)
-		#self.keyboard_control()
+		self.keyboard_control()
 		#self.mouse_control()
 		#self.zoom_keyboard_control()
 
