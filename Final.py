@@ -7,32 +7,67 @@ pygame.init()
 display = pygame.display.set_mode((800, 600))
 clock = pygame.time.Clock()
 
-class Player:
-    def __init__(self, x, y, width, height):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-        self.direction = pygame.math.Vector2()
-        self.speed = 7
+# class Player:
+#     def __init__(self, x, y, width, height):
+#         self.x = x
+#         self.y = y
+#         self.width = width
+#         self.height = height
+#         self.direction = pygame.math.Vector2()
+#         self.speed = 7
 
-    def main(self, display):
-        #Drawing Character
-        pygame.draw.rect(display, (255, 0, 0), (self.x, self.y, self.width, self.height))
+#     def main(self, display):
+#         #Drawing Character
+#         pygame.draw.rect(display, (255, 0, 0), (self.x, self.y, self.width, self.height))
 
-        #Movement
-        self.input()
-        self.x += self.direction.x * self.speed
-        self.y += self.direction.y * self.speed
+#         #Movement
+#         self.input()
+#         self.x += self.direction.x * self.speed
+#         self.y += self.direction.y * self.speed
 		
-    #Determining direction for movement
+#     #Determining direction for movement
+#     def input(self):
+#         keys = pygame.key.get_pressed()
+
+#         if keys[pygame.K_w]:
+#             self.direction.y = -1
+#         elif keys[pygame.K_s]:
+#             self.direction.y = 1
+#         else:
+#             self.direction.y = 0
+
+#         if keys[pygame.K_d]:
+#             self.direction.x = 1
+#         elif keys[pygame.K_a]:
+#             self.direction.x = -1
+#         else:
+#             self.direction.x = 0
+
+class Player(pygame.sprite.Sprite):
+    def __init__(self,groups,obstacles):
+        super().__init__(groups)
+        #image
+        self.image = pygame.Surface((30,60))
+        self.image.fill('blue')
+        self.obstacles = obstacles
+
+        #position
+        self.rect = self.image.get_rect(topleft = (200,200))
+        self.old_rect = self.rect.copy()
+
+        #movement
+        self.pos = pygame.math.Vector2(self.rect.topleft)
+        self.direction = pygame.math.Vector2()
+        self.speed = 200
+
     def input(self):
         keys = pygame.key.get_pressed()
 
-        if keys[pygame.K_w]:
-            self.direction.y = -1
-        elif keys[pygame.K_s]:
+        #movement input
+        if keys[pygame.K_s]:
             self.direction.y = 1
+        elif keys[pygame.K_w]:
+            self.direction.y = -1
         else:
             self.direction.y = 0
 
@@ -42,6 +77,74 @@ class Player:
             self.direction.x = -1
         else:
             self.direction.x = 0
+
+    def collisions(self,direction):
+        self.obstacles = pygame.sprite.spritecollide(self,collision_sprites,False)
+        for sprite in self.obstacles:
+            if direction == 'horizontal':
+                #player moving right and colliding w sprite's left side
+                if self.rect.right >= sprite.rect.left and self.old_rect.right >= sprite.rect.left:
+                    self.rect.right = sprite.rect.left
+                    self.pos.x = self.rect.x
+                    self.direction.x *= -1
+
+
+                #player moving left and colliding w sprite's right side
+                if self.rect.left <= sprite.rect.right and self.old_rect.left >= sprite.rect.right:
+                    self.rect.left = sprite.rect.right
+                    self.pos.x = self.rect.x
+                    self.direction.x *= -1
+
+
+            if direction == 'vertical':
+                #player moving down and colliding w sprite's top
+                if self.rect.bottom >= sprite.rect.top and self.old_rect.bottom <= sprite.rect.top:
+                    self.rect.bottom = sprite.rect.top
+                    self.pos.y = self.rect.y
+                    self.direction.y *= -1
+
+                #player moving up and colliding w sprite's bottom
+                if self.rect.top <= sprite.rect.bottom and self.old_rect.top >= sprite.rect.bottom:
+                    self.rect.top = sprite.rect.bottom
+                    self.pos.y = self.rect.y
+                    self.direction.y *= -1
+
+
+    def bordercollision(self,direction):
+        #left or right
+        if direction == 'horizontal':
+            if self.rect.left <= 0:
+                self.rect.left = 0
+                self.direction.x *= -1
+
+            if self.rect.right >= 600:
+                self.rect.right = 600
+                self.direction.x *= -1
+
+        if direction == 'vertical':
+            if self.rect.top <= 0:
+                self.rect.top = 0
+                self.direction.y *= -1
+
+            if self.rect.bottom >= 400:
+                self.rect.bottom = 400
+                self.direction.y *= -1
+
+    def update(self,dt):
+        self.old_rect = self.rect.copy()
+        self.input()
+
+        if self.direction.magnitude() != 0:
+            self.direction = self.direction.normalize()
+
+        self.pos.x += self.direction.x * self.speed * dt
+        self.rect.x = round(self.pos.x)
+        self.collisions('horizontal')
+        self.bordercollision('horizontal')
+        self.pos.y += self.direction.y * self.speed * dt
+        self.rect.y = round(self.pos.y)
+        self.collisions('vertical')
+        self.bordercollision('vertical')
 		
 class PlayerBullet:
     def __init__(self, x, y, mouse_x, mouse_y):
@@ -60,8 +163,10 @@ class PlayerBullet:
 
         pygame.draw.circle(display, (0, 0, 0), (self.x, self.y), 5)
 
+all_sprites = pygame.sprite.Group()
+collision_sprites = pygame.sprite.Group()
 
-player = Player(400, 400, 32, 32)
+player = Player(all_sprites, collision_sprites)
 player_bullets = []
 
 
@@ -70,6 +175,9 @@ player_bullets = []
 while True:
     display.fill((54,54,86))
 
+    dt = 60
+    
+
     mouse_x, mouse_y = pygame.mouse.get_pos()
 
     for event in pygame.event.get():
@@ -77,18 +185,14 @@ while True:
             sys.exit()
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
-                new_bullet = PlayerBullet(player.x, player.y, mouse_x, mouse_y)
+                new_bullet = PlayerBullet(player.x, player.y, mouse_x, mouse_y) #change
                 player_bullets.append(new_bullet)
 
-    player.main(display)
+    player.update(dt)
     
     for bullet in player_bullets:
         bullet.main(display)
 
-
-
-
-    
     
 
     clock.tick(60)
