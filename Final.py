@@ -3,6 +3,11 @@ import random
 from random import randrange
 from pygame.locals import*
 
+pygame.mixer.init()
+pygame.mixer.music.load('./graphics/lofi.mp3')
+pygame.mixer.music.play(-1)
+pygame.mixer.music.set_volume(0.5)
+
 
 #defining classes
 class StaticObstacle(pygame.sprite.Sprite):
@@ -24,7 +29,8 @@ class Player(pygame.sprite.Sprite):
         self.obstacles = obstacles
         self.pos = vec(x, y)
         self.vel = vec(0, 0)
-        self.image = pygame.image.load('./Project/Kyle/img/blobLeft.png')
+        self.image = pygame.image.load('./graphics/pumpkin.png')
+        # self.image = pygame.transform.rotozoom(self.image, 0, 1)
         self.base_player_image = self.image
         self.hitbox_rect = self.base_player_image.get_rect(center = self.pos)
         self.rect = self.hitbox_rect.copy()
@@ -126,7 +132,7 @@ class PlayerBullet:
         self.y = y
         self.mouse_x = mouse_x
         self.mouse_y = mouse_y
-        self.speed = 15
+        self.speed = 12
         self.angle = math.atan2(y-mouse_y, x-mouse_x)
         self.x_vel = math.cos(self.angle) * self.speed
         self.y_vel = math.sin(self.angle) * self.speed
@@ -138,8 +144,8 @@ class PlayerBullet:
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, position):
-         self.image = pygame.image.load('./Project/Kyle/img/blueOrb.png').convert_alpha()
-         # self.image = pygame.transform.rotozoom(self.image, 0, 2)
+         self.image = pygame.image.load('./graphics/bee.png').convert_alpha()
+         self.image = pygame.transform.rotozoom(self.image, 0, 1.1)
          self.rect = self.image.get_rect()
          self.rect.center = position
          self.direction = pygame.math.Vector2()
@@ -187,10 +193,19 @@ collision_sprites = pygame.sprite.Group()
 clock = pygame.time.Clock()
 
 #sprite setup
-StaticObstacle((0,0),(150,20),[all_sprites,collision_sprites],'yellow')
-StaticObstacle((150,0),(20,300),[all_sprites,collision_sprites],'blue')
 StaticObstacle((150,300),(100,20),[all_sprites,collision_sprites],'green')
 StaticObstacle((250,120),(20,200),[all_sprites,collision_sprites],'yellow')
+
+StaticObstacle((150,450),(200,20),[all_sprites,collision_sprites],'yellow')
+StaticObstacle((550,100),(100,20),[all_sprites,collision_sprites],'green')
+StaticObstacle((550,400),(20,200),[all_sprites,collision_sprites],'yellow')
+
+StaticObstacle((0,0),(800,20),[all_sprites,collision_sprites],'blue')
+StaticObstacle((0,580),(800,20),[all_sprites,collision_sprites],'blue')
+StaticObstacle((0,20),(20,780),[all_sprites,collision_sprites],'blue')
+StaticObstacle((780,20),(20,780),[all_sprites,collision_sprites],'blue')
+
+
 player = Player(all_sprites,collision_sprites, 200, 200)
 #ball = Ball(all_sprites,collision_sprites)
 player_bullets = []
@@ -205,14 +220,17 @@ enemy_spawnpoints = [(50, 50), (s_width - 50, 50), (50, s_height - 50), (s_width
 enemy_clock = 0
 enemy_wait_time = random.randint(1, 7)
 
+bullet_clock = 15
+
 #loop
 while True:
 
     enemy_clock += 1
+    bullet_clock += 1
 
     if enemy_clock >= enemy_wait_time * 60:
         enemy_clock = 0
-        enemy_wait_time = random.randint(1, 7)
+        enemy_wait_time = random.randint(1, 4)
         start_pos = random.randint(0, 3)
         enemy = Enemy(enemy_spawnpoints[start_pos])
         enemies.append(enemy)
@@ -226,9 +244,30 @@ while True:
             pygame.quit()
             sys.exit()
         if event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1:
+            if event.button == 1 and bullet_clock >= 15:
+                bullet_clock = 0
                 new_bullet = PlayerBullet(player.rect.centerx, player.rect.centery, mouse_x, mouse_y)
                 player_bullets.append(new_bullet)  # Add the bullet to the sprite group
+
+    for bullet in player_bullets:
+        #bullet position: bullet.x, bullet.y
+        #enemy position:  enemy.rect.centerx, enemy.rect.centery
+        for enemy in enemies:
+            if (bullet.x >= enemy.rect.centerx - 25 and bullet.x <= enemy.rect.centerx + 25):
+                if (bullet.y >= enemy.rect.centery - 10 and bullet.y <= enemy.rect.centery + 40):
+                    enemies.remove(enemy)
+                    player_bullets.remove(bullet)
+                    print("Enemy destroyed")
+
+    for enemy in enemies:
+        if (player.pos.x >= enemy.rect.centerx - 25 and player.pos.x <= enemy.rect.centerx + 25):
+                if (player.pos.y >= enemy.rect.centery - 25 and player.pos.y <= enemy.rect.centery + 25):
+                    pygame.quit()
+                    sys.exit()
+
+
+
+
 
 # drawing and updating the screen
 
@@ -236,7 +275,11 @@ while True:
     #     pygame.draw.rect(screen,'orange',sprite.old_rect)
 
     #drawing and updating the screen
+
+    background = pygame.image.load('./graphics/background.jpg') #for bg
+
     screen.fill('black')
+    screen.blit(background, (0, 0))
     all_sprites.update()
     all_sprites.draw(screen)
 
