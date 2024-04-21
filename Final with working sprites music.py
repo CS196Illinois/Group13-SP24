@@ -1,8 +1,15 @@
 import pygame
+import pygame.mixer
 import sys
 import math
 
 pygame.init()
+
+#for music
+pygame.mixer.init()
+pygame.mixer.music.load('./graphics/lofi.mp3')
+pygame.mixer.music.play(-1)
+pygame.mixer.music.set_volume(0.5)
 
 display = pygame.display.set_mode((800, 600))
 clock = pygame.time.Clock()
@@ -81,7 +88,10 @@ while True:
                 new_bullet = PlayerBullet(player.x, player.y, mouse_x, mouse_y)
                 player_bullets.append(new_bullet)
     
+    background = pygame.image.load('./graphics/background.jpg') #for bg
+
     display.fill((255,255,255))
+    display.blit(background, (0, 0)) #adding sprite bg
     player.render(display)
     player.main()
     
