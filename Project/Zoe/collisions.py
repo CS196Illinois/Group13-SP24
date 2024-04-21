@@ -1,4 +1,4 @@
-import pygame, sys, time, math
+import pygame, sys, math
 
 
 #defining classes
@@ -25,7 +25,7 @@ class Player(pygame.sprite.Sprite):
         #movement
         self.pos = pygame.math.Vector2(self.rect.topleft)
         self.direction = pygame.math.Vector2()
-        self.speed = 200
+        self.speed = 5
 
     def input(self):
         keys = pygame.key.get_pressed()
@@ -97,137 +97,147 @@ class Player(pygame.sprite.Sprite):
                 self.rect.bottom = 400
                 self.direction.y *= -1
 
-    def update(self,dt):
+    def update(self):
         self.old_rect = self.rect.copy()
         self.input()
 
         if self.direction.magnitude() != 0:
             self.direction = self.direction.normalize()
 
-        self.pos.x += self.direction.x * self.speed * dt
+        self.pos.x += self.direction.x * self.speed
         self.rect.x = round(self.pos.x)
         self.collisions('horizontal')
         self.bordercollision('horizontal')
-        self.pos.y += self.direction.y * self.speed * dt
+        self.pos.y += self.direction.y * self.speed
         self.rect.y = round(self.pos.y)
         self.collisions('vertical')
         self.bordercollision('vertical')
 
 #make power up class extending ball class
 
-class Ball(pygame.sprite.Sprite):
-    def __init__(self,groups,obstacles):
-        super().__init__(groups)
-        self.image = pygame.Surface((20,20))
-        self.image.fill('red')
-        self.rect = self.image.get_rect(topleft = (10,10))
+# class Ball(pygame.sprite.Sprite):
+#     def __init__(self,groups,obstacles):
+#         super().__init__(groups)
+#         self.image = pygame.Surface((20,20))
+#         self.image.fill('red')
+#         self.rect = self.image.get_rect(topleft = (10,10))
 
-        self.pos = pygame.math.Vector2(self.rect.topleft)
-        self.direction = pygame.math.Vector2(1,1)
-        self.speed = 200
-        self.old_rect = self.rect.copy()
-        self.obstacles = obstacles
+#         self.pos = pygame.math.Vector2(self.rect.topleft)
+#         self.direction = pygame.math.Vector2(1,1)
+#         self.speed = 200
+#         self.old_rect = self.rect.copy()
+#         self.obstacles = obstacles
 
-    def collisions(self,direction):
-        self.obstacles = pygame.sprite.spritecollide(self,collision_sprites,False)
+#     def collisions(self,direction):
+#         self.obstacles = pygame.sprite.spritecollide(self,collision_sprites,False)
 
-        if pygame.sprite.collide_rect(player,self):
-            self.obstacles.append(player)
+#         if pygame.sprite.collide_rect(player,self):
+#             self.obstacles.append(player)
 
-        for sprite in self.obstacles:
-            if direction == 'horizontal':
-                #ball moving right, colliding w sprite's left
-                if self.rect.right >= sprite.rect.left and self.old_rect.right <= sprite.rect.left:
+#         for sprite in self.obstacles:
+#             if direction == 'horizontal':
+#                 #ball moving right, colliding w sprite's left
+#                 if self.rect.right >= sprite.rect.left and self.old_rect.right <= sprite.rect.left:
 
-                    self.rect.right = sprite.rect.left
-                    self.pos.x = self.rect.x
-                    self.direction.x *= -1
-                    self.pos.x -= 1
+#                     self.rect.right = sprite.rect.left
+#                     self.pos.x = self.rect.x
+#                     self.direction.x *= -1
+#                     self.pos.x -= 1
 
-                #ball moving left, colliding w sprite's right
-                if self.rect.left <= sprite.rect.right and self.old_rect.left >= sprite.rect.right:
-                    self.rect.left = sprite.rect.right
-                    self.pos.x = self.rect.x
-                    self.direction.x *= -1
-                    self.pos.x += 1
+#                 #ball moving left, colliding w sprite's right
+#                 if self.rect.left <= sprite.rect.right and self.old_rect.left >= sprite.rect.right:
+#                     self.rect.left = sprite.rect.right
+#                     self.pos.x = self.rect.x
+#                     self.direction.x *= -1
+#                     self.pos.x += 1
 
-            if direction == 'vertical':
-                #ball moving down, colliding w sprite top
-                if self.rect.bottom >= sprite.rect.top and self.old_rect.bottom <= sprite.rect.top:
-                    self.rect.bottom = sprite.rect.top
-                    self.pos.y = self.rect.y
-                    self.direction.y *= -1
-                    self.pos.y -= 1
+#             if direction == 'vertical':
+#                 #ball moving down, colliding w sprite top
+#                 if self.rect.bottom >= sprite.rect.top and self.old_rect.bottom <= sprite.rect.top:
+#                     self.rect.bottom = sprite.rect.top
+#                     self.pos.y = self.rect.y
+#                     self.direction.y *= -1
+#                     self.pos.y -= 1
 
-                #ball moving up, colliding w sprite top
-                if self.rect.top <= sprite.rect.bottom and self.old_rect.top >= sprite.rect.bottom:
-                    self.rect.top = sprite.rect.bottom
-                    self.pos.y = self.rect.y
-                    self.direction.y *= -1
-                    self.pos.y += 1
+#                 #ball moving up, colliding w sprite top
+#                 if self.rect.top <= sprite.rect.bottom and self.old_rect.top >= sprite.rect.bottom:
+#                     self.rect.top = sprite.rect.bottom
+#                     self.pos.y = self.rect.y
+#                     self.direction.y *= -1
+#                     self.pos.y += 1
 
-    def bordercollision(self,direction):
-        #colliding w left or right side of window
-        if direction == 'vertical':
-            #bottom
-            if self.rect.bottom >= 400:
-                self.rect.bottom = 400
-                self.pos.y = self.rect.y
-                self.direction.y *= -1
-                self.pos.y -= 1
+#     def bordercollision(self,direction):
+#         #colliding w left or right side of window
+#         if direction == 'vertical':
+#             #bottom
+#             if self.rect.bottom >= 400:
+#                 self.rect.bottom = 400
+#                 self.pos.y = self.rect.y
+#                 self.direction.y *= -1
+#                 self.pos.y -= 1
 
-            #top
-            if self.rect.top <= 0:
-                self.rect.top = 0
-                self.pos.y = self.rect.y
-                self.direction.y *= -1
-                self.pos.y += 1
+#             #top
+#             if self.rect.top <= 0:
+#                 self.rect.top = 0
+#                 self.pos.y = self.rect.y
+#                 self.direction.y *= -1
+#                 self.pos.y += 1
 
-        if direction == 'horizontal':
-            #left
-            if self.rect.left <= 0:
-                self.rect.left = 0
-                self.pos.x = self.rect.x
-                self.direction.x *= -1
-                self.pos.x += 1
+#         if direction == 'horizontal':
+#             #left
+#             if self.rect.left <= 0:
+#                 self.rect.left = 0
+#                 self.pos.x = self.rect.x
+#                 self.direction.x *= -1
+#                 self.pos.x += 1
 
-            #right
-            if self.rect.right >= 600:
-                self.rect.right = 600
-                self.pos.x = self.rect.x
-                self.direction.x *= -1
-                self.pos.x -= 1
+#             #right
+#             if self.rect.right >= 600:
+#                 self.rect.right = 600
+#                 self.pos.x = self.rect.x
+#                 self.direction.x *= -1
+#                 self.pos.x -= 1
 
 
-    def update(self,dt):
-        self.old_rect = self.rect.copy()
-        self.pos.x += self.direction.x * self.speed * dt
-        self.rect.x = round(self.pos.x)
-        self.collisions('horizontal')
-        self.bordercollision('horizontal')
-        self.pos.y += self.direction.y * self.speed * dt
-        self.rect.y = round(self.pos.y)
-        self.collisions('vertical')
-        self.bordercollision('vertical')
+#     def update(self):
+#         self.old_rect = self.rect.copy()
+#         self.pos.x += self.direction.x * self.speed * 60
+#         self.rect.x = round(self.pos.x)
+#         self.collisions('horizontal')
+#         self.bordercollision('horizontal')
+#         self.pos.y += self.direction.y * self.speed * 60
+#         self.rect.y = round(self.pos.y)
+#         self.collisions('vertical')
+#         self.bordercollision('vertical')
 
-class PlayerBullet(pygame.sprite.Sprite):
+class PlayerBullet:
     def __init__(self, x, y, mouse_x, mouse_y):
-        super().__init__()  # Call the superclass constructor
-        self.image = pygame.Surface((10, 10))  # Create a surface for the bullet
-        self.image.fill((255, 0, 0))  # Fill the surface with red color
-        self.rect = self.image.get_rect(center=(x, y))  # Set the initial position of the bullet
+        # super().__init__()  # Call the superclass constructor
+        # self.image = pygame.Surface((10, 10))  # Create a surface for the bullet
+        # self.image.fill((255, 0, 0))  # Fill the surface with red color
+        # self.rect = self.image.get_rect(center=(x, y))  # Set the initial position of the bullet
+        # self.mouse_x = mouse_x
+        # self.mouse_y = mouse_y
+        # self.speed = 15
+        # self.angle = math.atan2(y - mouse_y, x - mouse_x)
+        # self.x_vel = math.cos(self.angle) * self.speed
+        # self.y_vel = math.sin(self.angle) * self.speed
+        # self.old_rect = self.rect.copy()
+
+        self.x = x
+        self.y = y
         self.mouse_x = mouse_x
         self.mouse_y = mouse_y
         self.speed = 15
-        self.angle = math.atan2(y - mouse_y, x - mouse_x)
+        self.angle = math.atan2(y-mouse_y, x-mouse_x)
         self.x_vel = math.cos(self.angle) * self.speed
         self.y_vel = math.sin(self.angle) * self.speed
-        self.old_rect = self.rect.copy()
 
 
-    def update(self):
-        self.rect.x -= int(self.x_vel)
-        self.rect.y -= int(self.y_vel)
+    def update(self, screen):
+        self.x -= int(self.x_vel)
+        self.y -= int(self.y_vel)
+
 
 pygame.init()
 
@@ -239,6 +249,7 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 #group setup
 all_sprites = pygame.sprite.Group()
 collision_sprites = pygame.sprite.Group()
+clock = pygame.time.Clock()
 
 #sprite setup
 StaticObstacle((0,0),(150,20),[all_sprites,collision_sprites],'yellow')
@@ -246,16 +257,13 @@ StaticObstacle((150,0),(20,300),[all_sprites,collision_sprites],'blue')
 StaticObstacle((150,300),(100,20),[all_sprites,collision_sprites],'green')
 StaticObstacle((250,120),(20,200),[all_sprites,collision_sprites],'yellow')
 player = Player(all_sprites,collision_sprites)
-ball = Ball(all_sprites,collision_sprites)
+#ball = Ball(all_sprites,collision_sprites)
 player_bullets = []
 
 #loop
-last_time = time.time()
 while True:
 
     #delta time
-    dt = time.time() - last_time
-    last_time = time.time()
 
     mouse_x, mouse_y = pygame.mouse.get_pos()
     #event loop
@@ -266,7 +274,7 @@ while True:
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
                 new_bullet = PlayerBullet(player.rect.centerx, player.rect.centery, mouse_x, mouse_y)
-                all_sprites.add(new_bullet)  # Add the bullet to the sprite group
+                player_bullets.append(new_bullet)  # Add the bullet to the sprite group
 
 # drawing and updating the screen
 
@@ -275,14 +283,16 @@ while True:
 
     #drawing and updating the screen
     screen.fill('black')
-    all_sprites.update(dt)
+    all_sprites.update()
     all_sprites.draw(screen)
 
     # Draw and update bullets
-    for bullet in all_sprites.sprites():
-        bullet.update(dt)  # Update each bullet
-        screen.blit(bullet.image, bullet.rect) 
 
+    for bullet in player_bullets:
+        bullet.update(screen)
+        pygame.draw.circle(screen, (255, 255, 255), (int(bullet.x), int(bullet.y)), 5)
+
+    clock.tick(60)
     pygame.display.update()  
 
 pygame.quit()
