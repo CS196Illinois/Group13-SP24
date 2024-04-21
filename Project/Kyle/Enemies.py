@@ -33,7 +33,7 @@ class Player(pygame.sprite.Sprite):
     def move(self):
         keys = pygame.key.get_pressed()
 
-        if keys[K_LEFT]:
+        if keys[K_LEFT or K_a]:
             if self.pos.x > 0:
                 self.pos.x -= 4
         if keys[K_RIGHT]:
