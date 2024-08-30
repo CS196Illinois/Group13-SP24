@@ -257,7 +257,6 @@ while True:
                 if (bullet.y >= enemy.rect.centery - 10 and bullet.y <= enemy.rect.centery + 40):
                     enemies.remove(enemy)
                     player_bullets.remove(bullet)
-                    print("Enemy destroyed")
 
     for enemy in enemies:
         if (player.pos.x >= enemy.rect.centerx - 25 and player.pos.x <= enemy.rect.centerx + 25):
